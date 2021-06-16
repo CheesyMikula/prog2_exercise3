@@ -10,6 +10,8 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.util.NoSuchElementException;
 
 
 public class NewsApi {
@@ -115,14 +117,23 @@ public class NewsApi {
     }
 
     protected String requestData() {
-        String url = buildURL();
+        String url = null;
+        try {
+            url = buildURL();
+        } catch (NewsApiException e) {
+            System.out.println("URL not working");
+        }
         System.out.println("URL: " + url);
         URL obj = null;
         try {
             obj = new URL(url);
         } catch (MalformedURLException e) {
             // TODO improve ErrorHandling
-            e.printStackTrace();
+            //e.printStackTrace();
+
+            System.out.println("Error: "+e.getMessage());
+            return null;
+
         }
         HttpURLConnection con;
         StringBuilder response = new StringBuilder();
@@ -134,6 +145,8 @@ public class NewsApi {
                 response.append(inputLine);
             }
             in.close();
+        } catch (NullPointerException e){
+            System.out.println("Error: Could not open connection");
         } catch (IOException e) {
             // TODO improve ErrorHandling
             System.out.println("Error "+e.getMessage());
@@ -141,46 +154,94 @@ public class NewsApi {
         return response.toString();
     }
 
-    protected String buildURL() {
+    protected String buildURL() throws NewsApiException {
         // TODO ErrorHandling
-        String urlbase = String.format(NEWS_API_URL,getEndpoint().getValue(),getQ(),getApiKey());
-        StringBuilder sb = new StringBuilder(urlbase);
+        String urlbase = null;
+        StringBuilder sb = null;
+
+        try{
+            urlbase = String.format(NEWS_API_URL,getEndpoint().getValue(),getQ(),getApiKey());
+            sb = new StringBuilder(urlbase);
+        } catch (Exception e){
+            //System.out.println("URL not working");
+            return "Error: URL not working";
+        }
+
+
 
         System.out.println(urlbase);
 
-        if(getFrom() != null){
-            sb.append(DELIMITER).append("from=").append(getFrom());
+        try{
+            if(getFrom() != null){
+                sb.append(DELIMITER).append("from=").append(getFrom());
+            }
+            else{
+                throw new NewsApiException("From is null");
+            }
+            if(getTo() != null){
+                sb.append(DELIMITER).append("to=").append(getTo());
+            }
+            else{
+                throw new NewsApiException("To is null");
+            }
+            if(getPage() != null){
+                sb.append(DELIMITER).append("page=").append(getPage());
+            }
+            else{
+                throw new NewsApiException("Page is null");
+            }
+            if(getPageSize() != null){
+                sb.append(DELIMITER).append("pageSize=").append(getPageSize());
+            }
+            else{
+                throw new NewsApiException("getPageSize is null");
+            }
+            if(getLanguage() != null){
+                sb.append(DELIMITER).append("language=").append(getLanguage());
+            }
+            else{
+                throw new NewsApiException("getLanguage is null");
+            }
+            if(getSourceCountry() != null){
+                sb.append(DELIMITER).append("country=").append(getSourceCountry());
+            }
+            else{
+                throw new NewsApiException("SourceCountry is null");
+            }
+            if(getSourceCategory() != null){
+                sb.append(DELIMITER).append("category=").append(getSourceCategory());
+            }
+            else{
+                throw new NewsApiException("SourceCategory is null");
+            }
+            if(getDomains() != null){
+                sb.append(DELIMITER).append("domains=").append(getDomains());
+            }
+            else{
+                throw new NewsApiException("Domains is null");
+            }
+            if(getExcludeDomains() != null){
+                sb.append(DELIMITER).append("excludeDomains=").append(getExcludeDomains());
+            }
+            else{
+                throw new NewsApiException("ExcludeDomains is null");
+            }
+            if(getqInTitle() != null){
+                sb.append(DELIMITER).append("qInTitle=").append(getqInTitle());
+            }
+            else{
+                throw new NewsApiException("qInTitle is null");
+            }
+            if(getSortBy() != null){
+                sb.append(DELIMITER).append("sortBy=").append(getSortBy());
+            }
+            else{
+                throw new NewsApiException("SortBy is null");
+            }
+        } catch(NewsApiException e){
+            System.out.println(e.getMessage());
         }
-        if(getTo() != null){
-            sb.append(DELIMITER).append("to=").append(getTo());
-        }
-        if(getPage() != null){
-            sb.append(DELIMITER).append("page=").append(getPage());
-        }
-        if(getPageSize() != null){
-            sb.append(DELIMITER).append("pageSize=").append(getPageSize());
-        }
-        if(getLanguage() != null){
-            sb.append(DELIMITER).append("language=").append(getLanguage());
-        }
-        if(getSourceCountry() != null){
-            sb.append(DELIMITER).append("country=").append(getSourceCountry());
-        }
-        if(getSourceCategory() != null){
-            sb.append(DELIMITER).append("category=").append(getSourceCategory());
-        }
-        if(getDomains() != null){
-            sb.append(DELIMITER).append("domains=").append(getDomains());
-        }
-        if(getExcludeDomains() != null){
-            sb.append(DELIMITER).append("excludeDomains=").append(getExcludeDomains());
-        }
-        if(getqInTitle() != null){
-            sb.append(DELIMITER).append("qInTitle=").append(getqInTitle());
-        }
-        if(getSortBy() != null){
-            sb.append(DELIMITER).append("sortBy=").append(getSortBy());
-        }
+
         return sb.toString();
     }
 
@@ -197,10 +258,14 @@ public class NewsApi {
                 }
             } catch (JsonProcessingException e) {
                 System.out.println("Error: "+e.getMessage());
+
             }
         }
         //TODO improve Errorhandling
         return newsReponse;
     }
 }
+
+
+
 
